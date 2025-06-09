@@ -81,7 +81,7 @@ class JumpHandler(override val player: Player, override val block: () -> Unit) :
 
     override fun initialize() {
         super.initialize()
-        player.getAttribute(Attribute.JUMP_STRENGTH)?.let { attribute ->
+        player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)?.let { attribute ->
             attribute.removeModifier(key)
             attribute.addModifier(AttributeModifier(key, -0.999, AttributeModifier.Operation.MULTIPLY_SCALAR_1))
         }
@@ -95,7 +95,7 @@ class JumpHandler(override val player: Player, override val block: () -> Unit) :
 
     override fun dispose() {
         super.dispose()
-        player.getAttribute(Attribute.JUMP_STRENGTH)?.removeModifier(key)
+        player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)?.removeModifier(key)
     }
 }
 

@@ -30,6 +30,6 @@ class ItemNameComponent(
 
     override fun matches(player: Player?, interactionContext: InteractionContext?, item: ItemStack): Boolean {
         val name = name.get(player) ?: return false
-        return item.effectiveName().plainText() == name.parsePlaceholders(player).stripped()
+        return item.displayName().plainText() == name.parsePlaceholders(player).stripped()
     }
 }

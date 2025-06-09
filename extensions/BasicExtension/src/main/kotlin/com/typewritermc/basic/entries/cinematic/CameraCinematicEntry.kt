@@ -6,6 +6,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPosition
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPositionAndRotation
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems
 import com.typewritermc.basic.entries.cinematic.DisplayCameraAction.Companion.BASE_INTERPOLATION
 import com.typewritermc.core.books.pages.Colors
 import com.typewritermc.core.extension.annotations.*
@@ -170,7 +172,7 @@ class CameraCinematicAction(
 
         if (segment != null) {
             val baseFrame = frame - segment.startFrame
-            if (abs(frame - lastFrame) > 5 && baseFrame > 0) {
+            if (abs(frame -lastFrame) > 5 && baseFrame > 0) {
                 action.skipToFrame(baseFrame)
             } else {
                 action.tickSegment(baseFrame)
@@ -275,7 +277,8 @@ class CameraCinematicAction(
         // Do this after restoring the player's state.
         // To make sure the player is where they were before the bound got overridden.
         boundStateSubscription?.cancel()
-        boundStateSubscription = null
+
+        originalState = null
     }
 
     override suspend fun teardown() {
@@ -304,8 +307,11 @@ private suspend inline fun Player.teleportIfNeeded(
 ) {
     if (frame % 10 == 0 || (location.distanceSqrt(location)
             ?: Double.MAX_VALUE) > MAX_DISTANCE_SQUARED
-    )
-        teleportAsync(location).await()
+    ) SYNC.switchContext {
+        teleport(location)
+        allowFlight = true
+        isFlying = true
+    }
 }
 
 private data class PointSegment(
@@ -349,13 +355,9 @@ private class DisplayCameraAction(
     }
 
     override suspend fun startSegment(segment: CameraSegment) {
-        if (isActive) return
-        isActive = true
         setupPath(segment)
 
         player.teleportAsync(path.first().position.toBukkitLocation()).await()
-        player.allowFlight = true
-        player.isFlying = true
 
         entity.spawn(path.first().position.toPacketLocation())
         entity.addViewer(player.uniqueId)
@@ -401,14 +403,13 @@ private class DisplayCameraAction(
     private suspend fun switchWithStop() {
         player.stopSpectatingEntity()
         entity.despawn()
+        entity.addViewer(player.uniqueId)
         player.teleportAsync(path.first().position.toBukkitLocation()).await()
         entity.spawn(path.first().position.toPacketLocation())
         player.spectateEntity(entity)
     }
 
     override suspend fun stop() {
-        if (!isActive) return
-        isActive = false
         player.stopSpectatingEntity()
         entity.despawn()
         entity.remove()
