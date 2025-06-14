@@ -1,9 +1,12 @@
 package com.typewritermc.engine.paper.utils
 
+import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTimeUpdate
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil
 import com.typewritermc.engine.paper.extensions.packetevents.sendPacketTo
+import com.typewritermc.engine.paper.interaction.InterceptionBundle
 import com.typewritermc.engine.paper.plugin
 import org.bukkit.GameMode
 import org.bukkit.Location
